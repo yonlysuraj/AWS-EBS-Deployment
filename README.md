@@ -11,7 +11,6 @@ Before deploying, ensure you have the following:
 - An **AWS account** ([Sign up here](https://aws.amazon.com/))
 - **AWS CLI** installed ([Installation guide](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html))
 - **Elastic Beanstalk CLI (EB CLI)** installed ([Installation guide](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb-cli3-install.html))
-- **Git** installed ([Download here](https://git-scm.com/downloads))
 - **Python 3** installed
 - **Flask and dependencies installed** in a virtual environment
   ```bash
@@ -30,7 +29,7 @@ aws configure
 You'll be prompted to enter:
 - AWS Access Key ID
 - AWS Secret Access Key
-- Default AWS Region (e.g., `us-west-2`)
+- Default AWS Region (e.g., `ap-south-1`)
 - Default output format (leave blank for `json`)
 
 ### 2. Initialize Elastic Beanstalk
@@ -103,14 +102,6 @@ You can filter errors using:
 eb logs | grep ERROR
 ```
 
-## Updating the Application
-After making changes to your application, commit the changes and deploy:
-```bash
-git add .
-git commit -m "Updated application"
-eb deploy
-```
-
 ## Auto Scaling Configuration
 ### 1. Scaling Policy
 - **Scale Up:** If NetworkOut exceeds **6MB**, a new instance is launched.
@@ -126,38 +117,5 @@ aws autoscaling describe-scaling-activities \
   --output table
 ```
 
-## Managing Environment Variables
-To set environment variables, use:
-```bash
-eb setenv VAR_NAME=value
-```
-To list environment variables:
-```bash
-eb printenv
-```
-
-## Deleting an Environment
-To delete an environment and all its resources:
-```bash
-eb terminate my-aws-env
-```
-
-## Pushing to GitHub
-1. Initialize a Git repository (if not already done):
-```bash
-git init
-```
-2. Add files and commit:
-```bash
-git add .
-git commit -m "Initial commit"
-```
-3. Create a GitHub repository and push the code:
-```bash
-git remote add origin https://github.com/your-username/aws-ebs-deployment.git
-git push -u origin main
-```
-
 ## Conclusion
-You've successfully deployed your **Flask application** on AWS Elastic Beanstalk! 🚀 If you have any issues, refer to the [AWS Elastic Beanstalk Documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html).
-
+You've successfully deployed your **Flask application** on AWS Elastic Beanstalk with **Auto Scaling enabled**! 🚀 If you have any issues, refer to the [AWS Elastic Beanstalk Documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html).
