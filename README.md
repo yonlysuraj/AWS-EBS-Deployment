@@ -1,7 +1,7 @@
 # AWS Elastic Beanstalk Deployment Guide
 
 ## Overview
-This repository contains a step-by-step guide to deploying a web application on **AWS Elastic Beanstalk (EBS)** using the **AWS CLI and Elastic Beanstalk CLI**.
+This repository contains a step-by-step guide to deploying a **Flask web application** on **AWS Elastic Beanstalk (EBS)** using the **AWS CLI and Elastic Beanstalk CLI**.
 
 AWS Elastic Beanstalk is a Platform-as-a-Service (PaaS) that allows developers to deploy and manage applications in the cloud without worrying about the infrastructure.
 
@@ -12,7 +12,13 @@ Before deploying, ensure you have the following:
 - **AWS CLI** installed ([Installation guide](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html))
 - **Elastic Beanstalk CLI (EB CLI)** installed ([Installation guide](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb-cli3-install.html))
 - **Git** installed ([Download here](https://git-scm.com/downloads))
-- **Python 3** (if deploying a Python app) or the relevant runtime for your application
+- **Python 3** installed
+- **Flask and dependencies installed** in a virtual environment
+  ```bash
+  python3 -m venv venv
+  source venv/bin/activate  # On Windows use: venv\Scripts\activate
+  pip install -r requirements.txt
+  ```
 
 ## Setting Up AWS Elastic Beanstalk
 
@@ -33,7 +39,7 @@ Navigate to your project directory and run:
 eb init
 ```
 - Choose the AWS region.
-- Select a platform (e.g., Python, Node.js, etc.).
+- Select **Python** as the platform.
 - Choose an application name.
 - Select a keypair for SSH access (optional).
 
@@ -58,6 +64,35 @@ Once deployed, get the application URL with:
 eb open
 ```
 
+## Testing the Application
+### 1. Manually Test with cURL
+Run the following command to test your Flask app's response:
+```bash
+curl http://my-aws-env.eba-xxxxxx.ap-south-1.elasticbeanstalk.com/
+```
+Replace the URL with your actual environment URL.
+
+### 2. Load Testing with ApacheBench (ab)
+To check performance and auto-scaling, run:
+```bash
+ab -n 20000 -c 500 http://my-aws-env.eba-xxxxxx.ap-south-1.elasticbeanstalk.com/
+```
+This will send **20,000 requests** with **500 concurrent connections**.
+
+### 3. Monitor Metrics in CloudWatch
+To check NetworkOut statistics, use:
+```bash
+aws cloudwatch get-metric-statistics \
+  --namespace AWS/EC2 \
+  --metric-name NetworkOut \
+  --dimensions Name=AutoScalingGroupName,Value=your-autoscaling-group-name \
+  --statistics Average \
+  --start-time "$(date -u -d '-10 minutes' +%Y-%m-%dT%H:%M:%SZ)" \
+  --end-time "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --period 300 \
+  --region ap-south-1
+```
+
 ## Checking Logs
 If you encounter issues, view logs with:
 ```bash
@@ -76,15 +111,19 @@ git commit -m "Updated application"
 eb deploy
 ```
 
-## Troubleshooting
-If deployment fails, check logs as mentioned above. If issues persist, consider restarting or terminating the environment:
+## Auto Scaling Configuration
+### 1. Scaling Policy
+- **Scale Up:** If NetworkOut exceeds **6MB**, a new instance is launched.
+- **Scale Down:** If NetworkOut falls below **2MB**, an instance is removed.
+
+### 2. Verify Auto Scaling
+Run the following to check recent auto-scaling activities:
 ```bash
-eb restart
-```
-To delete and recreate the environment:
-```bash
-eb terminate my-aws-env
-eb create my-aws-env
+aws autoscaling describe-scaling-activities \
+  --auto-scaling-group-name your-autoscaling-group-name \
+  --region ap-south-1 \
+  --query "Activities[*].[StartTime,StatusCode,Description]" \
+  --output table
 ```
 
 ## Managing Environment Variables
@@ -120,5 +159,5 @@ git push -u origin main
 ```
 
 ## Conclusion
-You've successfully deployed your application on AWS Elastic Beanstalk! íº€ If you have any issues, refer to the [AWS Elastic Beanstalk Documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html).
+You've successfully deployed your **Flask application** on AWS Elastic Beanstalk! ðŸš€ If you have any issues, refer to the [AWS Elastic Beanstalk Documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html).
 
